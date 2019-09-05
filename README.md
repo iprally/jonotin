@@ -32,7 +32,7 @@ We use it with [at-at](https://github.com/overtone/at-at), so that subscribe is 
     (at-at/interspaced 30000
                        (fn []
                          (jonotin/subscribe! {:project-name (config/get-property [:pubsub :project-name])
-                                              :subscription (config/get-property [:pubsub :subscription])
+                                              :subscription-name (config/get-property [:pubsub :subscription])
                                               :batch-size 10
                                               :handle-msg-fn handle-msg!
                                               :handle-error-fn handle-error!})
