@@ -1,6 +1,6 @@
 # jonotin
 
-Dead-simple Google cloud Pub/Sub from Clojure. jonotin is a never used Finnish word for a thing that queues.
+Dead-simple Google Cloud Pub/Sub from Clojure. jonotin is a never used Finnish word for a thing that queues.
 
 ## Usage
 
@@ -26,7 +26,7 @@ Subscribe processed messages from the queue until the queue is empty. Batch size
                      :handle-error-fn (fn [e]
                                         (println "Oops!" e))})
   ```
-We use it with at-at, so that subscribe is tried every 30s when queue is empty.
+We use it with [at-at](https://github.com/overtone/at-at), so that subscribe is tried every 30s when queue is empty.
 ```clj
 (let [pool (at-at/mk-pool)]
     (at-at/interspaced 30000
