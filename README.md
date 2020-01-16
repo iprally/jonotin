@@ -2,13 +2,37 @@
 
 Dead-simple Google Cloud Pub/Sub from Clojure. jonotin is a never used Finnish word for a thing that queues. Read more about jonotin from [IPRally blog](https://www.iprally.com/news/google-cloud-pubsub-with-clojure).
 
-## Usage
+## Latest version
 
-Copy the code. It's too simple for library and we don't have enough time for updating the binaries.
+Leiningen/Boot
+```clj
+[jonotin "0.2.1"]
+```
+
+Clojure CLI/deps.edn
+```clj
+jonotin {:mvn/version "0.2.1"}
+```
+
+Gradle
+```clj
+compile 'jonotin:jonotin:0.2.1'
+```
+
+Maven
+```clj
+<dependency>
+  <groupId>jonotin</groupId>
+  <artifactId>jonotin</artifactId>
+  <version>0.2.1</version>
+</dependency>
+```
 
 ### Publish!
 
 ```clj
+(require `[jonotin.core :as jonotin])
+
 (jonotin/publish! {:project-name "my-gcloud-project"
                    :topic-name "my-topic"
                    :messages ["msg1" "msg2"]})
@@ -16,26 +40,14 @@ Copy the code. It's too simple for library and we don't have enough time for upd
 
 ### Subscribe!
 
-Subscribe processed messages from the queue until the queue is empty. Batch size is the number of messages fetched from the queue at once.
+Subscribe processes messages from the queue concurrently.
 ```clj
+(require `[jonotin.core :as jonotin])
+
 (jonotin/subscribe! {:project-name "my-gcloud-project"
                      :subscription-name "my-subscription-name"
-                     :batch-size 10
                      :handle-msg-fn (fn [msg]
                                       (println "Handling" msg)
                      :handle-error-fn (fn [e]
                                         (println "Oops!" e))})
   ```
-We use it with [at-at](https://github.com/overtone/at-at), so that subscribe is tried every 30s when queue is empty.
-```clj
-(let [pool (at-at/mk-pool)]
-    (at-at/interspaced 30000
-                       (fn []
-                         (jonotin/subscribe! {:project-name (config/get-property [:pubsub :project-name])
-                                              :subscription-name (config/get-property [:pubsub :subscription])
-                                              :batch-size 10
-                                              :handle-msg-fn handle-msg!
-                                              :handle-error-fn handle-error!})
-                         (log/info "All EP patents imported from pub/sub queue"))
-                       pool))
-```
