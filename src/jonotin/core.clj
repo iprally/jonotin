@@ -2,20 +2,16 @@
   (:import (org.threeten.bp Duration)
            (com.google.protobuf ByteString)
            (com.google.api.gax.batching BatchingSettings)
-           (com.google.api.core ApiFuture
-                                ApiFutureCallback
+           (com.google.api.core ApiFutureCallback
                                 ApiFutures
                                 ApiService$Listener)
            (com.google.common.util.concurrent MoreExecutors)
            (com.google.cloud.pubsub.v1 Publisher
-                                       AckReplyConsumer
                                        MessageReceiver
                                        Subscriber)
            (com.google.pubsub.v1 ProjectTopicName
                                  PubsubMessage
-                                 ProjectSubscriptionName
-                                 AcknowledgeRequest
-                                 PullRequest)))
+                                 ProjectSubscriptionName)))
 
 (defn subscribe! [{:keys [project-name subscription-name handle-msg-fn handle-error-fn]}]
   (let [subscription-name-obj (ProjectSubscriptionName/format project-name subscription-name)
@@ -24,12 +20,17 @@
                          (let [data (.toStringUtf8 (.getData message))]
                            (try
                             (handle-msg-fn data)
+                            (.ack consumer)
                             (catch Exception e
                               (if (some? handle-error-fn)
-                                (handle-error-fn e)
-                                (throw e)))
-                            (finally
-                              (.ack consumer))))))
+                                (let [error-response (handle-error-fn e)]
+                                  (if (or (nil? error-response)
+                                          (:ack error-response))
+                                    (.ack error-response)
+                                    (.nack error-response)))
+                                (do
+                                  (.ack consumer)
+                                  (throw e))))))))
         subscriber (.build (Subscriber/newBuilder subscription-name-obj msg-receiver))
         listener (proxy [ApiService$Listener] []
                    (failed [from failure]

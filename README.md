@@ -6,17 +6,17 @@ Dead-simple Google Cloud Pub/Sub from Clojure. jonotin is a never used Finnish w
 
 Leiningen/Boot
 ```clj
-[jonotin "0.2.1"]
+[jonotin "0.3.0"]
 ```
 
 Clojure CLI/deps.edn
 ```clj
-jonotin {:mvn/version "0.2.1"}
+jonotin {:mvn/version "0.3.0"}
 ```
 
 Gradle
 ```clj
-compile 'jonotin:jonotin:0.2.1'
+compile 'jonotin:jonotin:0.3.0'
 ```
 
 Maven
@@ -24,7 +24,7 @@ Maven
 <dependency>
   <groupId>jonotin</groupId>
   <artifactId>jonotin</artifactId>
-  <version>0.2.1</version>
+  <version>0.3.0</version>
 </dependency>
 ```
 
@@ -51,3 +51,8 @@ Subscribe processes messages from the queue concurrently.
                      :handle-error-fn (fn [e]
                                         (println "Oops!" e))})
   ```
+
+Error handler function supports return value to determine if the message should be acknowledged or not. 
+```clj
+{:ack boolean}
+```
