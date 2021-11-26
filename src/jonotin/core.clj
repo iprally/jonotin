@@ -26,8 +26,8 @@
                                 (let [error-response (handle-error-fn e)]
                                   (if (or (nil? error-response)
                                           (:ack error-response))
-                                    (.ack error-response)
-                                    (.nack error-response)))
+                                    (.ack consumer)
+                                    (.nack consumer)))
                                 (do
                                   (.ack consumer)
                                   (throw e))))))))
