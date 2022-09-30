@@ -2,6 +2,7 @@
   (:import (org.threeten.bp Duration)
            (com.google.protobuf ByteString)
            (com.google.api.gax.batching BatchingSettings)
+           (com.google.api.gax.core InstantiatingExecutorProvider)
            (com.google.api.core ApiFutureCallback
                                 ApiFutures
                                 ApiService$Listener)
@@ -13,7 +14,12 @@
                                  PubsubMessage
                                  ProjectSubscriptionName)))
 
-(defn subscribe! [{:keys [project-name subscription-name handle-msg-fn handle-error-fn]}]
+(defn- get-executor-provider [{:keys [executor-thread-count]}]
+  (let [executor-provider-builder (cond-> (InstantiatingExecutorProvider/newBuilder)
+                                    executor-thread-count (.setExecutorThreadCount executor-thread-count))]
+    (.build executor-provider-builder)))
+
+(defn subscribe! [{:keys [project-name subscription-name handle-msg-fn handle-error-fn opts]}]
   (let [subscription-name-obj (ProjectSubscriptionName/format project-name subscription-name)
         msg-receiver (reify MessageReceiver
                        (receiveMessage [_ message consumer]
@@ -31,7 +37,10 @@
                                 (do
                                   (.ack consumer)
                                   (throw e))))))))
-        subscriber (.build (Subscriber/newBuilder subscription-name-obj msg-receiver))
+        subscriber-builder (cond-> (Subscriber/newBuilder subscription-name-obj msg-receiver)
+                             (:parallel-pull-count opts) (.setParallelPullCount (:parallel-pull-count opts))
+                             (:executor-thread-count opts) (.setExecutorProvider (get-executor-provider opts)))
+        subscriber (.build subscriber-builder)
         listener (proxy [ApiService$Listener] []
                    (failed [from failure]
                      (println "Jonotin failure with msg handling -" failure)))]
@@ -58,7 +67,7 @@
                                    (throw (ex-info "Failed to publish message"
                                                    {:type :jonotin/publish-failure
                                                     :message t})))
-                      (onSuccess [_ result]
+                      (onSuccess [_ _result]
                                    ()))
         publish-msg-fn (fn [msg-str]
                          (let [msg-builder (PubsubMessage/newBuilder)
