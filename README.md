@@ -47,7 +47,7 @@ Subscribe processes messages from the queue concurrently.
 (jonotin/subscribe! {:project-name "my-gcloud-project-id"
                      :subscription-name "my-subscription-name"
                      :handle-msg-fn (fn [msg]
-                                      (println "Handling" msg)
+                                      (println "Handling" msg))
                      :handle-error-fn (fn [e]
                                         (println "Oops!" e))})
   ```
@@ -66,7 +66,7 @@ Subscribe with concurrency control.
                      :options {:parallel-pull-count 2
                                :executor-thread-count 4}
                      :handle-msg-fn (fn [msg]
-                                      (println "Handling" msg)
+                                      (println "Handling" msg))
                      :handle-error-fn (fn [e]
                                         (println "Oops!" e))})
   ```
