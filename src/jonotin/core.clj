@@ -19,7 +19,7 @@
                                     executor-thread-count (.setExecutorThreadCount executor-thread-count))]
     (.build executor-provider-builder)))
 
-(defn subscribe! [{:keys [project-name subscription-name handle-msg-fn handle-error-fn opts]}]
+(defn subscribe! [{:keys [project-name subscription-name handle-msg-fn handle-error-fn options]}]
   (let [subscription-name-obj (ProjectSubscriptionName/format project-name subscription-name)
         msg-receiver (reify MessageReceiver
                        (receiveMessage [_ message consumer]
@@ -38,8 +38,8 @@
                                   (.ack consumer)
                                   (throw e))))))))
         subscriber-builder (cond-> (Subscriber/newBuilder subscription-name-obj msg-receiver)
-                             (:parallel-pull-count opts) (.setParallelPullCount (:parallel-pull-count opts))
-                             (:executor-thread-count opts) (.setExecutorProvider (get-executor-provider opts)))
+                             (:parallel-pull-count options) (.setParallelPullCount (:parallel-pull-count options))
+                             (:executor-thread-count options) (.setExecutorProvider (get-executor-provider options)))
         subscriber (.build subscriber-builder)
         listener (proxy [ApiService$Listener] []
                    (failed [from failure]

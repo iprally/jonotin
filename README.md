@@ -63,8 +63,8 @@ Subscribe with concurrency control.
 
 (jonotin/subscribe! {:project-name "my-gcloud-project"
                      :subscription-name "my-subscription-name"
-                     :opts {:parallel-pull-count 2
-                            :executor-thread-count 4}
+                     :options {:parallel-pull-count 2
+                               :executor-thread-count 4}
                      :handle-msg-fn (fn [msg]
                                       (println "Handling" msg)
                      :handle-error-fn (fn [e]
