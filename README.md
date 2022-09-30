@@ -33,7 +33,7 @@ Maven
 ```clj
 (require '[jonotin.core :as jonotin])
 
-(jonotin/publish! {:project-name "my-gcloud-project"
+(jonotin/publish! {:project-name "my-gcloud-project-id"
                    :topic-name "my-topic"
                    :messages ["msg1" "msg2"]})
 ```
@@ -44,7 +44,7 @@ Subscribe processes messages from the queue concurrently.
 ```clj
 (require '[jonotin.core :as jonotin])
 
-(jonotin/subscribe! {:project-name "my-gcloud-project"
+(jonotin/subscribe! {:project-name "my-gcloud-project-id"
                      :subscription-name "my-subscription-name"
                      :handle-msg-fn (fn [msg]
                                       (println "Handling" msg)
@@ -61,7 +61,7 @@ Subscribe with concurrency control.
 ```clj
 (require '[jonotin.core :as jonotin])
 
-(jonotin/subscribe! {:project-name "my-gcloud-project"
+(jonotin/subscribe! {:project-name "my-gcloud-project-id"
                      :subscription-name "my-subscription-name"
                      :options {:parallel-pull-count 2
                                :executor-thread-count 4}
