@@ -31,7 +31,7 @@ Maven
 ### Publish!
 
 ```clj
-(require `[jonotin.core :as jonotin])
+(require '[jonotin.core :as jonotin])
 
 (jonotin/publish! {:project-name "my-gcloud-project"
                    :topic-name "my-topic"
@@ -42,7 +42,7 @@ Maven
 
 Subscribe processes messages from the queue concurrently.
 ```clj
-(require `[jonotin.core :as jonotin])
+(require '[jonotin.core :as jonotin])
 
 (jonotin/subscribe! {:project-name "my-gcloud-project"
                      :subscription-name "my-subscription-name"
@@ -59,7 +59,7 @@ Error handler function supports return value to determine if the message should 
 
 Subscribe with concurrency control.
 ```clj
-(require `[jonotin.core :as jonotin])
+(require '[jonotin.core :as jonotin])
 
 (jonotin/subscribe! {:project-name "my-gcloud-project"
                      :subscription-name "my-subscription-name"
