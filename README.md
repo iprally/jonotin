@@ -6,17 +6,17 @@ Dead-simple Google Cloud Pub/Sub from Clojure. jonotin is a never used Finnish w
 
 Leiningen/Boot
 ```clj
-[jonotin "0.3.1"]
+[jonotin "0.3.2"]
 ```
 
 Clojure CLI/deps.edn
 ```clj
-jonotin {:mvn/version "0.3.1"}
+jonotin {:mvn/version "0.3.2"}
 ```
 
 Gradle
 ```clj
-compile 'jonotin:jonotin:0.3.1'
+compile 'jonotin:jonotin:0.3.2'
 ```
 
 Maven
@@ -24,16 +24,16 @@ Maven
 <dependency>
   <groupId>jonotin</groupId>
   <artifactId>jonotin</artifactId>
-  <version>0.3.1</version>
+  <version>0.3.2</version>
 </dependency>
 ```
 
 ### Publish!
 
 ```clj
-(require `[jonotin.core :as jonotin])
+(require '[jonotin.core :as jonotin])
 
-(jonotin/publish! {:project-name "my-gcloud-project"
+(jonotin/publish! {:project-name "my-gcloud-project-id"
                    :topic-name "my-topic"
                    :messages ["msg1" "msg2"]})
 ```
@@ -42,17 +42,31 @@ Maven
 
 Subscribe processes messages from the queue concurrently.
 ```clj
-(require `[jonotin.core :as jonotin])
+(require '[jonotin.core :as jonotin])
 
-(jonotin/subscribe! {:project-name "my-gcloud-project"
+(jonotin/subscribe! {:project-name "my-gcloud-project-id"
                      :subscription-name "my-subscription-name"
                      :handle-msg-fn (fn [msg]
-                                      (println "Handling" msg)
+                                      (println "Handling" msg))
                      :handle-error-fn (fn [e]
                                         (println "Oops!" e))})
   ```
 
-Error handler function supports return value to determine if the message should be acknowledged or not. 
+Error handler function supports return value to determine if the message should be acknowledged or not.
 ```clj
 {:ack boolean}
 ```
+
+Subscribe with concurrency control.
+```clj
+(require '[jonotin.core :as jonotin])
+
+(jonotin/subscribe! {:project-name "my-gcloud-project-id"
+                     :subscription-name "my-subscription-name"
+                     :options {:parallel-pull-count 2
+                               :executor-thread-count 4}
+                     :handle-msg-fn (fn [msg]
+                                      (println "Handling" msg))
+                     :handle-error-fn (fn [e]
+                                        (println "Oops!" e))})
+  ```
