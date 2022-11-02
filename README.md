@@ -30,12 +30,20 @@ Maven
 
 ### Publish!
 
+Publish messages to topic. Thresholds can be configured through options:
+- Delay Threshold: Counting from the time that the first message is queued, once this delay has passed, then send the batch. The default value is 100 millisecond, which is good for large amount of messages.
+- Message Count Threshold: Once this many messages are queued, send all of the messages in a single call, even if the delay threshold hasn't elapsed yet. The default value is 10 messages.
+- Request Byte Threshold: Once the number of bytes in the batched request reaches this threshold, send all of the messages in a single call, even if neither the delay or message count thresholds have been exceeded yet. The default value is 1000 bytes.
+
 ```clj
 (require '[jonotin.core :as jonotin])
 
 (jonotin/publish! {:project-name "my-gcloud-project-id"
                    :topic-name "my-topic"
-                   :messages ["msg1" "msg2"]})
+                   :messages ["msg1" "msg2"]
+		   :options {:request-byte-threshold 100
+                             :element-count-threshold 10
+                             :delay-threshold 1000}})
 ```
 
 ### Subscribe!

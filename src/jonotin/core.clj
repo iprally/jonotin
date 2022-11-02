@@ -48,16 +48,16 @@
     (.awaitRunning (.startAsync subscriber))
     (.awaitTerminated subscriber)))
 
-(defn publish! [{:keys [project-name topic-name messages]}]
+(defn publish! [{:keys [project-name topic-name messages options]}]
   (when (> (count messages) 10000)
     (throw (ex-info "Message count over safety limit"
                     {:type :jonotin/batch-size-limit
                      :message-count (count messages)}))) 
   (let [topic (ProjectTopicName/of project-name topic-name)
         batching-settings (-> (BatchingSettings/newBuilder)
-                              (.setRequestByteThreshold 1000)
-                              (.setElementCountThreshold 10)
-                              (.setDelayThreshold (Duration/ofMillis 1000))
+                              (.setRequestByteThreshold (or (:request-byte-threshold options) 1000))
+                              (.setElementCountThreshold (or (:element-count-threshold options) 10))
+                              (.setDelayThreshold (Duration/ofMillis (or (:delay-threshold options) 100)))
                               .build)
         publisher (-> (Publisher/newBuilder topic)
                       (.setBatchingSettings batching-settings)
