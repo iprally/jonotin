@@ -27,7 +27,7 @@
                            (try
                             (handle-msg-fn data)
                             (.ack consumer)
-                            (catch Exception e
+                            (catch Throwable e
                               (if (some? handle-error-fn)
                                 (let [error-response (handle-error-fn e)]
                                   (if (or (nil? error-response)
