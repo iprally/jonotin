@@ -6,17 +6,17 @@ Dead-simple Google Cloud Pub/Sub from Clojure. jonotin is a never used Finnish w
 
 Leiningen/Boot
 ```clj
-[jonotin "0.3.4"]
+[jonotin "0.3.5"]
 ```
 
 Clojure CLI/deps.edn
 ```clj
-jonotin {:mvn/version "0.3.4"}
+jonotin {:mvn/version "0.3.5"}
 ```
 
 Gradle
 ```clj
-compile 'jonotin:jonotin:0.3.4'
+compile 'jonotin:jonotin:0.3.5'
 ```
 
 Maven
@@ -24,7 +24,7 @@ Maven
 <dependency>
   <groupId>jonotin</groupId>
   <artifactId>jonotin</artifactId>
-  <version>0.3.4</version>
+  <version>0.3.5</version>
 </dependency>
 ```
 

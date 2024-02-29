@@ -1,4 +1,4 @@
-(defproject jonotin "0.3.4"
+(defproject jonotin "0.3.5"
   :description "Google Pub/Sub Java SDK wrapper"
   :url "https://github.com/iprally/jonotin"
   :license {:name "The MIT License"
