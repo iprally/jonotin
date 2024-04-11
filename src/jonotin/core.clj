@@ -1,18 +1,18 @@
 (ns jonotin.core
-  (:import (org.threeten.bp Duration)
-           (com.google.protobuf ByteString)
+  (:import (com.google.api.core ApiFutureCallback
+                       ApiFutures
+                       ApiService$Listener)
            (com.google.api.gax.batching BatchingSettings)
            (com.google.api.gax.core InstantiatingExecutorProvider)
-           (com.google.api.core ApiFutureCallback
-                                ApiFutures
-                                ApiService$Listener)
-           (com.google.common.util.concurrent MoreExecutors)
-           (com.google.cloud.pubsub.v1 Publisher
-                                       MessageReceiver
+           (com.google.cloud.pubsub.v1 MessageReceiver
+                                       Publisher
                                        Subscriber)
-           (com.google.pubsub.v1 ProjectTopicName
-                                 PubsubMessage
-                                 ProjectSubscriptionName)))
+           (com.google.common.util.concurrent MoreExecutors)
+           (com.google.protobuf ByteString)
+           (com.google.pubsub.v1 ProjectSubscriptionName
+                                 ProjectTopicName
+                                 PubsubMessage)
+           (org.threeten.bp Duration)))
 
 (defn- get-executor-provider [{:keys [executor-thread-count]}]
   (let [executor-provider-builder (cond-> (InstantiatingExecutorProvider/newBuilder)
@@ -25,18 +25,18 @@
                        (receiveMessage [_ message consumer]
                          (let [data (.toStringUtf8 (.getData message))]
                            (try
-                            (handle-msg-fn data)
-                            (.ack consumer)
-                            (catch Throwable e
-                              (if (some? handle-error-fn)
-                                (let [error-response (handle-error-fn e)]
-                                  (if (or (nil? error-response)
-                                          (:ack error-response))
-                                    (.ack consumer)
-                                    (.nack consumer)))
-                                (do
-                                  (.ack consumer)
-                                  (throw e))))))))
+                             (handle-msg-fn data)
+                             (.ack consumer)
+                             (catch Throwable e
+                               (if (some? handle-error-fn)
+                                 (let [error-response (handle-error-fn e)]
+                                   (if (or (nil? error-response)
+                                           (:ack error-response))
+                                     (.ack consumer)
+                                     (.nack consumer)))
+                                 (do
+                                   (.ack consumer)
+                                   (throw e))))))))
         subscriber-builder (cond-> (Subscriber/newBuilder subscription-name-obj msg-receiver)
                              (:parallel-pull-count options) (.setParallelPullCount (:parallel-pull-count options))
                              (:executor-thread-count options) (.setExecutorProvider (get-executor-provider options)))
@@ -52,7 +52,7 @@
   (when (> (count messages) 10000)
     (throw (ex-info "Message count over safety limit"
                     {:type :jonotin/batch-size-limit
-                     :message-count (count messages)}))) 
+                     :message-count (count messages)})))
   (let [topic (ProjectTopicName/of project-name topic-name)
         batching-settings (-> (BatchingSettings/newBuilder)
                               (.setRequestByteThreshold (or (:request-byte-threshold options) 1000))
@@ -64,11 +64,11 @@
                       .build)
         callback-fn (reify ApiFutureCallback
                       (onFailure [_ t]
-                                   (throw (ex-info "Failed to publish message"
-                                                   {:type :jonotin/publish-failure
-                                                    :message t})))
+                        (throw (ex-info "Failed to publish message"
+                                        {:type :jonotin/publish-failure
+                                         :message t})))
                       (onSuccess [_ _result]
-                                   ()))
+                        ()))
         publish-msg-fn (fn [msg-str]
                          (let [msg-builder (PubsubMessage/newBuilder)
                                data (ByteString/copyFromUtf8 msg-str)
