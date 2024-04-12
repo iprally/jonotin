@@ -43,7 +43,7 @@
         subscriber-builder (cond-> (Subscriber/newBuilder subscription-name-obj msg-receiver)
                              (:parallel-pull-count options) (.setParallelPullCount (:parallel-pull-count options))
                              (:executor-thread-count options) (.setExecutorProvider (get-executor-provider options))
-                             emulator-channel (emulator/configure emulator-channel))
+                             emulator-channel (emulator/set-builder-options emulator-channel))
         subscriber (.build subscriber-builder)
         listener (proxy [ApiService$Listener] []
                    (failed [from failure]
@@ -68,7 +68,7 @@
                            (emulator/build-channel))
         publisher-builder (cond-> (Publisher/newBuilder topic)
                             batching-settings (.setBatchingSettings batching-settings)
-                            emulator-channel (emulator/configure emulator-channel))
+                            emulator-channel (emulator/set-builder-options emulator-channel))
         publisher (.build publisher-builder)
         callback-fn (reify ApiFutureCallback
                       (onFailure [_ t]

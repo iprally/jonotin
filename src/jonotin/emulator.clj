@@ -20,7 +20,7 @@
       (.usePlaintext)
       (.build)))
 
-(defn configure [builder emulator-channel]
+(defn set-builder-options [builder emulator-channel]
   (ensure-host-configured)
   (-> builder
       (.setCredentialsProvider (NoCredentialsProvider/create))
