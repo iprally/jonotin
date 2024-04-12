@@ -1,7 +1,8 @@
 (ns jonotin.core
+  (:require [jonotin.emulator :as emulator])
   (:import (com.google.api.core ApiFutureCallback
-                       ApiFutures
-                       ApiService$Listener)
+                                ApiFutures
+                                ApiService$Listener)
            (com.google.api.gax.batching BatchingSettings)
            (com.google.api.gax.core InstantiatingExecutorProvider)
            (com.google.cloud.pubsub.v1 MessageReceiver
@@ -37,16 +38,20 @@
                                  (do
                                    (.ack consumer)
                                    (throw e))))))))
+        emulator-channel (when emulator/host-configured?
+                           (emulator/build-channel))
         subscriber-builder (cond-> (Subscriber/newBuilder subscription-name-obj msg-receiver)
                              (:parallel-pull-count options) (.setParallelPullCount (:parallel-pull-count options))
-                             (:executor-thread-count options) (.setExecutorProvider (get-executor-provider options)))
+                             (:executor-thread-count options) (.setExecutorProvider (get-executor-provider options))
+                             emulator-channel (emulator/configure emulator-channel))
         subscriber (.build subscriber-builder)
         listener (proxy [ApiService$Listener] []
                    (failed [from failure]
                      (println "Jonotin failure with msg handling -" failure)))]
     (.addListener subscriber listener (MoreExecutors/directExecutor))
     (.awaitRunning (.startAsync subscriber))
-    (.awaitTerminated subscriber)))
+    (.awaitTerminated subscriber)
+    (.shutdown emulator-channel)))
 
 (defn publish! [{:keys [project-name topic-name messages options]}]
   (when (> (count messages) 10000)
@@ -59,9 +64,12 @@
                               (.setElementCountThreshold (or (:element-count-threshold options) 10))
                               (.setDelayThreshold (Duration/ofMillis (or (:delay-threshold options) 100)))
                               .build)
-        publisher (-> (Publisher/newBuilder topic)
-                      (.setBatchingSettings batching-settings)
-                      .build)
+        emulator-channel (when emulator/host-configured?
+                           (emulator/build-channel))
+        publisher-builder (cond-> (Publisher/newBuilder topic)
+                            batching-settings (.setBatchingSettings batching-settings)
+                            emulator-channel (emulator/configure emulator-channel))
+        publisher (.build publisher-builder)
         callback-fn (reify ApiFutureCallback
                       (onFailure [_ t]
                         (throw (ex-info "Failed to publish message"
@@ -82,4 +90,5 @@
         message-ids (.get (ApiFutures/allAsList futures))]
     (.shutdown publisher)
     (.awaitTermination publisher 5 java.util.concurrent.TimeUnit/MINUTES)
+    (.shutdown emulator-channel)
     {:delivered-messages (count message-ids)}))
