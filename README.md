@@ -78,3 +78,41 @@ Subscribe with concurrency control.
                      :handle-error-fn (fn [e]
                                         (println "Oops!" e))})
   ```
+
+## Testing
+
+jonotin supports Google Cloud Pub/Sub emulator. When environment variable `PUBSUB_EMULATOR_HOST` is set, then jonotin will use emulator instead of the real GCP Pub/Sub API.
+
+To set up the emulator, follow [Testing apps locally with the emulator](https://cloud.google.com/pubsub/docs/emulator) guide for setting up the emulator.
+
+The guide features a command for setting `PUBSUB_EMULATOR_HOST`:
+
+```bash
+$(gcloud beta emulators pubsub env-init)
+```
+
+Run your application and witness jonotin diligently using the emulator.
+
+Note that on the first run, no topics or subscriptions exist in the emulator. jonotin includes helpers for creating/removing those:
+
+```clojure
+(require '[jonotin.emulator :as emulator])
+
+;; Create a topic
+(emulator/create-topic "my-project" "my-topic")
+
+;; Delete a topic
+(emulator/delete-topic "my-project" "my-topic")
+
+;; Create a pull subscription
+(emulator/create-pull-subscription "my-project" "my-topic" "my-pull-subscription")
+
+;; Delete a pull subscription
+(emulator/delete-pull-subscription "my-project" "my-topic" "my-pull-subscription")
+
+;; Create a push subscription
+(emulator/create-push-subscription "my-project" "my-topic" "my-push-subscription")
+
+;; Delete a push subscription
+(emulator/delete-push-subscription "my-project" "my-topic" "my-push-subscription")
+```
