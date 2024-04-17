@@ -6,17 +6,17 @@ Dead-simple Google Cloud Pub/Sub from Clojure. jonotin is a never used Finnish w
 
 Leiningen/Boot
 ```clj
-[jonotin "0.3.5"]
+[jonotin "0.4.0"]
 ```
 
 Clojure CLI/deps.edn
 ```clj
-jonotin {:mvn/version "0.3.5"}
+jonotin {:mvn/version "0.4.0"}
 ```
 
 Gradle
 ```clj
-compile 'jonotin:jonotin:0.3.5'
+compile 'jonotin:jonotin:0.4.0'
 ```
 
 Maven
@@ -24,7 +24,7 @@ Maven
 <dependency>
   <groupId>jonotin</groupId>
   <artifactId>jonotin</artifactId>
-  <version>0.3.5</version>
+  <version>0.4.0</version>
 </dependency>
 ```
 
@@ -78,3 +78,72 @@ Subscribe with concurrency control.
                      :handle-error-fn (fn [e]
                                         (println "Oops!" e))})
   ```
+
+## Testing your application
+
+jonotin supports Google Cloud Pub/Sub emulator. When environment variable `PUBSUB_EMULATOR_HOST` is set, then jonotin will use emulator instead of the real GCP Pub/Sub API.
+
+To set up the emulator, follow [Testing apps locally with the emulator](https://cloud.google.com/pubsub/docs/emulator) guide for setting up the emulator.
+
+Once your emulator is up-and-running, configure `PUBSUB_EMULATOR_HOST`:
+
+```bash
+$(gcloud beta emulators pubsub env-init) && echo $PUBSUB_EMULATOR_HOST
+# => localhost:8085
+```
+
+Now run your application and witness jonotin diligently using the emulator.
+
+Note that emulator is ephemeral and no topics or subscriptions exist when it starts. jonotin includes helpers for creating/removing those:
+
+```clojure
+(require '[jonotin.emulator :as emulator])
+
+;; Create a topic
+(emulator/create-topic "project-name" "topic-name")
+
+;; Get the topic
+(emulator/get-topic "project-name" "topic-name")
+
+;; Delete the topic
+(emulator/delete-topic "project-name" "topic-name")
+
+;; Create a subscription
+(emulator/create-subscription "project-name" "topic-name" "subscription-name")
+
+;; Create a subscription with custom ack-deadline-seconds
+(emulator/create-subscription "project-name" "topic-name" "subscription-name" {:ack-deadline-seconds 600})
+
+;; Get the subscription
+(emulator/get-subscription "project-name" "subscription-name")
+
+;; Delete the subscription
+(emulator/delete-subscription "project-name" "subscription-name")
+```
+
+To be sure that jonotin in your test suite targets Pub/Sub emulator, use
+
+```clojure
+(emulator/ensure-host-configured)
+```
+
+where appropriate. This function will throw if `PUBSUB_EMULATOR_HOST` is not configured.
+
+# Development
+
+## Testing jonotin
+
+Once you've set up the Google Cloud Pub/Sub emulator, start the emulator for jonotin test project:
+
+```bash
+gcloud beta emulators pubsub start --project=jonotin-test-emulator
+```
+
+In another shell session, configure `PUBSUB_EMULATOR_HOST` and run the tests:
+
+```bash
+$(gcloud beta emulators pubsub env-init) && echo $PUBSUB_EMULATOR_HOST
+# => localhost:8085
+
+lein test
+```
