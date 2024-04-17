@@ -85,15 +85,16 @@ jonotin supports Google Cloud Pub/Sub emulator. When environment variable `PUBSU
 
 To set up the emulator, follow [Testing apps locally with the emulator](https://cloud.google.com/pubsub/docs/emulator) guide for setting up the emulator.
 
-The guide features a command for setting `PUBSUB_EMULATOR_HOST`:
+Once your emulator is up-and-running, configure `PUBSUB_EMULATOR_HOST`:
 
 ```bash
-$(gcloud beta emulators pubsub env-init)
+$(gcloud beta emulators pubsub env-init) && echo $PUBSUB_EMULATOR_HOST
+# => localhost:8085
 ```
 
-Run your application and witness jonotin diligently using the emulator.
+Now run your application and witness jonotin diligently using the emulator.
 
-Note that on the first run, no topics or subscriptions exist in the emulator. jonotin includes helpers for creating/removing those:
+Note that emulator is ephemeral and no topics or subscriptions exist when it starts. jonotin includes helpers for creating/removing those:
 
 ```clojure
 (require '[jonotin.emulator :as emulator])
