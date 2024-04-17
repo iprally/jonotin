@@ -12,7 +12,7 @@
 
 (defn- ensure-host-configured []
   (when-not host-configured?
-    (throw (ex-info "Unable to use emulator without PUBSUB_EMULATOR_HOST"
+    (throw (ex-info "PUBSUB_EMULATOR_HOST is required when using Google Cloud Pub/Sub emulator"
                     {:type :jonotin/emulator-host-not-configured}))))
 
 (defn build-channel []
@@ -66,6 +66,10 @@
   (with-topic-admin-client
     #(.createTopic % (TopicName/of project-name topic-name))))
 
+(defn get-topic [project-name topic-name]
+  (with-topic-admin-client
+    #(.getTopic % (TopicName/of project-name topic-name))))
+
 (defn delete-topic [project-name topic-name]
   (with-topic-admin-client
     (fn [client]
@@ -80,6 +84,10 @@
             project-topic (TopicName/of project-name topic-name)
             push-config (PushConfig/getDefaultInstance)]
         (.createSubscription client project-subscription project-topic push-config ack-deadline-seconds)))))
+
+(defn get-subscription [project-name subscription-name]
+  (with-subscription-admin-client
+    #(.getSubscription % (SubscriptionName/of project-name subscription-name))))
 
 (defn delete-subscription [project-name subscription-name]
   (with-subscription-admin-client
