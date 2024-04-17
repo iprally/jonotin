@@ -38,26 +38,26 @@
                                         (GrpcTransportChannel/create)
                                         (FixedTransportChannelProvider/create)))))
 
-(defn with-topic-admin-client [fn]
+(defn with-topic-admin-client [f]
   (let [channel (build-channel)
         topic-admin-settings (-> (TopicAdminSettings/newBuilder)
                                  (set-admin-client-builder-options channel)
                                  (.build))
         topic-client (TopicAdminClient/create ^TopicAdminSettings topic-admin-settings)]
     (try
-      (fn topic-client)
+      (f topic-client)
       (finally
         (.shutdown topic-client)
         (.shutdown channel)))))
 
-(defn with-subscription-admin-client [fn]
+(defn with-subscription-admin-client [f]
   (let [channel (build-channel)
         subscription-admin-settings (-> (SubscriptionAdminSettings/newBuilder)
                                         (set-admin-client-builder-options channel)
                                         (.build))
         subscription-client (SubscriptionAdminClient/create ^SubscriptionAdminSettings subscription-admin-settings)]
     (try
-      (fn subscription-client)
+      (f subscription-client)
       (finally
         (.shutdown subscription-client)
         (.shutdown channel)))))
