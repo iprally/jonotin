@@ -132,8 +132,17 @@ where appropriate. This function will throw if `PUBSUB_EMULATOR_HOST` is not con
 
 ## Testing jonotin
 
-Once you've set up the Google Cloud Pub/Sub emulator and configured `PUBSUB_EMULATOR_HOST`, use Leiningen to run the tests:
+Once you've set up the Google Cloud Pub/Sub emulator, start the emulator for jonotin test project:
 
 ```bash
+gcloud beta emulators pubsub start --project=jonotin-test-emulator
+```
+
+In another shell session, configure `PUBSUB_EMULATOR_HOST` and run the tests:
+
+```bash
+$(gcloud beta emulators pubsub env-init) && echo $PUBSUB_EMULATOR_HOST
+# => localhost:8085
+
 lein test
 ```
