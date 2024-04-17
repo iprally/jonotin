@@ -1,14 +1,7 @@
 (ns jonotin.emulator-test
   (:require [clojure.test :refer :all]
-            [jonotin.emulator :as emulator]))
-
-(def project-name "jonotin-test-emulator")
-
-(defn unique-topic-name []
-  (str "test-topic-" (random-uuid)))
-
-(defn unique-subscription-name []
-  (str "test-subscription-" (random-uuid)))
+            [jonotin.emulator :as emulator]
+            [jonotin.test-helpers :refer :all]))
 
 (deftest topic-test
   (let [topic-name (unique-topic-name)]

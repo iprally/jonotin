@@ -10,9 +10,9 @@
 
 (def host-configured? (boolean pubsub-emulator-host))
 
-(defn- ensure-host-configured []
+(defn ensure-host-configured []
   (when-not host-configured?
-    (throw (ex-info "PUBSUB_EMULATOR_HOST is required when using Google Cloud Pub/Sub emulator"
+    (throw (ex-info "PUBSUB_EMULATOR_HOST is required for using Google Cloud Pub/Sub emulator"
                     {:type :jonotin/emulator-host-not-configured}))))
 
 (defn build-channel []

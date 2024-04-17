@@ -79,7 +79,7 @@ Subscribe with concurrency control.
                                         (println "Oops!" e))})
   ```
 
-## Testing
+## Testing your application
 
 jonotin supports Google Cloud Pub/Sub emulator. When environment variable `PUBSUB_EMULATOR_HOST` is set, then jonotin will use emulator instead of the real GCP Pub/Sub API.
 
@@ -99,20 +99,41 @@ Note that on the first run, no topics or subscriptions exist in the emulator. jo
 (require '[jonotin.emulator :as emulator])
 
 ;; Create a topic
-(emulator/create-topic "my-project" "my-topic")
+(emulator/create-topic "project-name" "topic-name")
 
-;; Delete a topic
-(emulator/delete-topic "my-project" "my-topic")
+;; Get the topic
+(emulator/get-topic "project-name" "topic-name")
 
-;; Create a pull subscription
-(emulator/create-pull-subscription "my-project" "my-topic" "my-pull-subscription")
+;; Delete the topic
+(emulator/delete-topic "project-name" "topic-name")
 
-;; Delete a pull subscription
-(emulator/delete-pull-subscription "my-project" "my-topic" "my-pull-subscription")
+;; Create a subscription
+(emulator/create-subscription "project-name" "topic-name" "subscription-name")
 
-;; Create a push subscription
-(emulator/create-push-subscription "my-project" "my-topic" "my-push-subscription")
+;; Create a subscription with custom ack-deadline-seconds
+(emulator/create-subscription "project-name" "topic-name" "subscription-name" {:ack-deadline-seconds 600})
 
-;; Delete a push subscription
-(emulator/delete-push-subscription "my-project" "my-topic" "my-push-subscription")
+;; Get the subscription
+(emulator/get-subscription "project-name" "subscription-name")
+
+;; Delete the subscription
+(emulator/delete-subscription "project-name" "subscription-name")
+```
+
+To be sure that jonotin in your test suite targets Pub/Sub emulator, use
+
+```clojure
+(emulator/ensure-host-configured)
+```
+
+where appropriate. This function will throw if `PUBSUB_EMULATOR_HOST` is not configured.
+
+# Development
+
+## Testing jonotin
+
+Once you've set up the Google Cloud Pub/Sub emulator and configured `PUBSUB_EMULATOR_HOST`, use Leiningen to run the tests:
+
+```bash
+lein test
 ```
