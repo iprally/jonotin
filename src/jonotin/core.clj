@@ -51,7 +51,7 @@
     (.addListener subscriber listener (MoreExecutors/directExecutor))
     (.awaitRunning (.startAsync subscriber))
     (.awaitTerminated subscriber)
-    (.shutdown emulator-channel)))
+    (some-> emulator-channel .shutdown)))
 
 (defn publish! [{:keys [project-name topic-name messages options]}]
   (when (> (count messages) 10000)
@@ -90,5 +90,5 @@
         message-ids (.get (ApiFutures/allAsList futures))]
     (.shutdown publisher)
     (.awaitTermination publisher 5 java.util.concurrent.TimeUnit/MINUTES)
-    (.shutdown emulator-channel)
+    (some-> emulator-channel .shutdown)
     {:delivered-messages (count message-ids)}))
