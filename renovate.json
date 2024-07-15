@@ -1,6 +1,18 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "schedule:weekly"],
-  "packageRules": [{"matchUpdateTypes": ["patch"], "dependencyDashboardApproval": true}
+  "extends": [
+    "config:recommended"
+  ],
+  "schedule": [
+    "at any time"
+  ],
+  "packageRules": [
+    {
+      "updateTypes": ["patch"],
+      "schedule": ["every weekend"]
+    },
+    {
+      "updateTypes": ["minor", "major"],
+      "enabled": false
+    }
   ]
 }
