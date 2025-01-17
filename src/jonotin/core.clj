@@ -13,6 +13,7 @@
            (com.google.pubsub.v1 ProjectSubscriptionName
                                  ProjectTopicName
                                  PubsubMessage)
+           (java.util.concurrent TimeUnit)
            (org.threeten.bp Duration)))
 
 (defn- get-executor-provider [{:keys [executor-thread-count]}]
@@ -69,26 +70,28 @@
         publisher-builder (cond-> (Publisher/newBuilder topic)
                             batching-settings (.setBatchingSettings batching-settings)
                             emulator-channel (emulator/set-builder-options emulator-channel))
-        publisher (.build publisher-builder)
-        callback-fn (reify ApiFutureCallback
-                      (onFailure [_ t]
-                        (throw (ex-info "Failed to publish message"
-                                        {:type :jonotin/publish-failure
-                                         :message t})))
-                      (onSuccess [_ _result]
-                        ()))
-        publish-msg-fn (fn [msg-str]
-                         (let [msg-builder (PubsubMessage/newBuilder)
-                               data (ByteString/copyFromUtf8 msg-str)
-                               msg (-> msg-builder
-                                       (.setData data)
-                                       .build)
-                               msg-future (.publish publisher msg)]
-                           (ApiFutures/addCallback msg-future callback-fn (MoreExecutors/directExecutor))
-                           msg-future))
-        futures (map publish-msg-fn messages)
-        message-ids (.get (ApiFutures/allAsList futures))]
-    (.shutdown publisher)
-    (.awaitTermination publisher 5 java.util.concurrent.TimeUnit/MINUTES)
-    (some-> emulator-channel .shutdown)
-    {:delivered-messages (count message-ids)}))
+        publisher (.build publisher-builder)]
+    (try
+      (let [callback-fn (reify ApiFutureCallback
+                          (onFailure [_ t]
+                            (throw (ex-info "Failed to publish message"
+                                            {:type :jonotin/publish-failure
+                                             :message t})))
+                          (onSuccess [_ _result]
+                            ()))
+            publish-msg-fn (fn [msg-str]
+                             (let [msg-builder (PubsubMessage/newBuilder)
+                                   data (ByteString/copyFromUtf8 msg-str)
+                                   msg (-> msg-builder
+                                           (.setData data)
+                                           .build)
+                                   msg-future (.publish publisher msg)]
+                               (ApiFutures/addCallback msg-future callback-fn (MoreExecutors/directExecutor))
+                               msg-future))
+            futures (map publish-msg-fn messages)
+            message-ids (.get (ApiFutures/allAsList futures))]
+        {:delivered-messages (count message-ids)})
+      (finally
+        (.shutdown publisher)
+        (.awaitTermination publisher 5 TimeUnit/MINUTES)
+        (some-> emulator-channel .shutdown)))))
